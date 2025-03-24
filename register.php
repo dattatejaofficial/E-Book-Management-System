@@ -34,7 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         } else {
             // Handle Profile Image Upload
             if (!empty($_FILES["profile_image"]["name"])) {
-                $target_dir = "uploads/";
+                $target_dir = "uploads/profiles/";
                 if (!file_exists($target_dir)) {
                     mkdir($target_dir, 0777, true);
                 }
