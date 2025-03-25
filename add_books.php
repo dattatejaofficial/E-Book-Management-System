@@ -119,7 +119,7 @@ $conn->close();
             <input type="file" name="book_file" class="form-control" accept=".pdf, .epub, .txt" required>
         </div>
 
-        <button type="submit" class="btn btn-primary w-100">Add Book</button>
+        <button type="submit" class="btn btn-primary w-100 mb-2">Add Book</button>
     </form>
 </div>
 

@@ -57,8 +57,11 @@ $books_result = $conn->query($books_query);
 <nav class="navbar navbar-dark bg-dark">
     <div class="container-fluid">
         <a class="navbar-brand">E-Book Management - Admin Panel</a>
-        <span class="text-white">Welcome, <?php echo $admin_name; ?>!</span>
-        <a href="admin_logout.php" class="btn btn-danger">Logout</a>
+        <div class="d-flex align-items-center">
+            <span class="text-white me-3">Welcome, <?php echo $admin_name; ?>!</span>
+            <a href="admin_profile.php" class="btn btn-info me-2">Profile</a> <!-- Profile Button -->
+            <a href="admin_logout.php" class="btn btn-danger">Logout</a>
+        </div>
     </div>
 </nav>
 
