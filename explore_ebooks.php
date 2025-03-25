@@ -6,18 +6,18 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Handle search query
-$search = isset($_GET['search']) ? $conn->real_escape_string($_GET['search']) : "";
-$sql = "SELECT * FROM books";
+// Handle search query securely
+$search = isset($_GET['search']) ? trim($_GET['search']) : "";
+$books = [];
 
 if (!empty($search)) {
-    $sql .= " WHERE title LIKE '%$search%' OR author LIKE '%$search%' OR keywords LIKE '%$search%'";
-}
+    $sql = "SELECT * FROM books WHERE LOWER(title) LIKE LOWER(?) OR LOWER(author) LIKE LOWER(?) OR LOWER(keywords) LIKE LOWER(?)";
+    $stmt = $conn->prepare($sql);
+    $searchParam = "%$search%";
+    $stmt->bind_param("sss", $searchParam, $searchParam, $searchParam);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-$result = $conn->query($sql);
-
-$books = [];
-if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         $books[] = $row;
     }
@@ -46,6 +46,10 @@ $conn->close();
             border-radius: 10px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
             transition: 0.3s;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         .book-card:hover {
             transform: scale(1.02);
@@ -116,27 +120,30 @@ $conn->close();
         </div>
     </form>
 
-    <div class="row">
-        <?php if (count($books) > 0): ?>
-            <?php foreach ($books as $book): ?>
-                <div class="col-md-4 mb-4">
-                    <a href="read_ebook.php?book_id=<?php echo $book['book_id']; ?>" style="text-decoration: none; color: inherit;">
-                        <div class="book-card">
-                            <img src="<?php echo 'uploads/cover_pages/' . $book['cover_page']; ?>" alt="Cover" class="cover">
-                            <h5 class="mt-2"><?php echo $book['title']; ?></h5>
-                            <p><strong>Author:</strong> <?php echo $book['author']; ?></p>
-                            <p><strong>Version:</strong> <?php echo $book['version']; ?></p>
-                            <p class="rating">⭐ <?php echo $book['ratings']; ?>/5</p>
-                            <p><strong>Keywords:</strong> <?php echo $book['keywords']; ?></p>
-                        </div>
-                    </a>
-                </div>
-
-            <?php endforeach; ?>
-        <?php else: ?>
-            <p class="text-center text-muted">No books found.</p>
-        <?php endif; ?>
-    </div>
+    <?php if (!empty($search)): ?>
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            <?php if (count($books) > 0): ?>
+                <?php foreach ($books as $book): ?>
+                    <div class="col">
+                        <a href="read_ebook.php?book_id=<?php echo htmlspecialchars($book['book_id']); ?>" style="text-decoration: none; color: inherit;">
+                            <div class="book-card h-100">
+                                <img src="<?php echo !empty($book['cover_page']) ? 'uploads/cover_pages/' . htmlspecialchars($book['cover_page']) : 'assets/default_cover.jpg'; ?>" alt="Cover" class="cover">
+                                <h5 class="mt-2"><?php echo htmlspecialchars($book['title']); ?></h5>
+                                <p><strong>Author:</strong> <?php echo htmlspecialchars($book['author']); ?></p>
+                                <p><strong>Version:</strong> <?php echo htmlspecialchars($book['version']); ?></p>
+                                <p class="rating">⭐ <?php echo htmlspecialchars($book['ratings']); ?>/5</p>
+                                <p><strong>Keywords:</strong> <?php echo htmlspecialchars($book['keywords']); ?></p>
+                            </div>
+                        </a>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <p class="text-center text-muted">No books found.</p>
+            <?php endif; ?>
+        </div>
+    <?php else: ?>
+        <p class="text-center text-muted">Start typing in the search bar to find books.</p>
+    <?php endif; ?>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
